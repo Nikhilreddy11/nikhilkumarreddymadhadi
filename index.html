@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nikhil Kumar Reddy Madhadi | Data Engineer</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+    <title>Nikhil Kumar Reddy Madhadi | Data Architect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -12,217 +12,418 @@
             box-sizing: border-box;
         }
 
-        html {
-            scroll-behavior: smooth;
+        :root {
+            --primary: #00ffff;
+            --secondary: #ff00ff;
+            --accent: #ffff00;
+            --dark: #0a0a0a;
+            --light: #ffffff;
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: #0a0a0a;
-            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--dark);
+            color: var(--light);
             overflow-x: hidden;
+            cursor: none;
+        }
+
+        /* Custom Cursor */
+        .cursor {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10000;
+            mix-blend-mode: difference;
+            transition: transform 0.2s ease, border-color 0.2s;
+        }
+
+        .cursor.hover {
+            transform: scale(1.5);
+            border-color: var(--secondary);
+        }
+
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 10001;
+        }
+
+        /* Three.js Canvas */
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        /* Content Overlay */
+        .content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 30px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+            background: rgba(10, 10, 10, 0.3);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 50px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-menu a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+
+        .nav-menu a:hover {
+            color: var(--primary);
+        }
+
+        .nav-menu a:hover::after {
+            width: 100%;
         }
 
         /* Hero Section */
         .hero {
             height: 100vh;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            padding: 0 60px;
             position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
         }
 
-        .hero-bg {
+        .hero-tag {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.3s;
+        }
+
+        .hero-title {
+            font-size: clamp(60px, 10vw, 140px);
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 30px;
+            background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.5));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.5s;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(20px, 3vw, 36px);
+            font-weight: 400;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 50px;
+            max-width: 800px;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.7s;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px 50px;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards 0.9s;
+        }
+
+        .hero-cta::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .hero-cta:hover::before {
+            left: 0;
+        }
+
+        .hero-cta:hover {
+            color: var(--dark);
+            border-color: var(--primary);
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 1.2s;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 60px;
+            background: linear-gradient(to bottom, var(--primary), transparent);
+            animation: scrollAnim 2s ease-in-out infinite;
+        }
+
+        @keyframes scrollAnim {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+            from { opacity: 0; }
+        }
+
+        /* Section Base */
+        section {
+            min-height: 100vh;
+            padding: 120px 60px;
+            position: relative;
+        }
+
+        .section-header {
+            margin-bottom: 80px;
+        }
+
+        .section-tag {
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 3px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .section-title {
+            font-size: clamp(40px, 6vw, 80px);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 30px;
+        }
+
+        .section-description {
+            font-size: 20px;
+            color: rgba(255, 255, 255, 0.6);
+            max-width: 700px;
+            line-height: 1.6;
+        }
+
+        /* About Section */
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 80px;
+            align-items: center;
+        }
+
+        .about-content p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 25px;
+        }
+
+        .about-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 40px;
+            margin-top: 50px;
+        }
+
+        .stat-item {
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover {
+            background: rgba(0, 255, 255, 0.05);
+            border-color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 48px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .about-image {
+            width: 100%;
+            height: 600px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1), rgba(255, 0, 255, 0.1));
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid rgba(0, 255, 255, 0.2);
+        }
+
+        .about-image::before {
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 50%, rgba(102, 126, 234, 0.2), transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(118, 75, 162, 0.2), transparent 50%);
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 255, 255, 0.03) 0px,
+                    transparent 1px,
+                    transparent 2px,
+                    rgba(0, 255, 255, 0.03) 3px
+                );
+            animation: scan 8s linear infinite;
         }
 
-        .hero-content {
-            text-align: center;
-            z-index: 10;
-            animation: fadeInUp 1.2s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .hero-title {
-            font-size: clamp(48px, 8vw, 96px);
-            font-weight: 900;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #fff, #667eea);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            line-height: 1.1;
-        }
-
-        .hero-subtitle {
-            font-size: clamp(20px, 3vw, 32px);
-            color: rgba(255, 255, 255, 0.7);
-            margin-bottom: 15px;
-            font-weight: 600;
-        }
-
-        .hero-tagline {
-            font-size: clamp(16px, 2vw, 20px);
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 50px;
-            max-width: 700px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .cta-button {
-            display: inline-block;
-            padding: 18px 45px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 18px;
-            transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-
-        .cta-button:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.5);
-        }
-
-        /* Section Base */
-        section {
-            padding: 120px 8%;
-            position: relative;
-        }
-
-        .section-title {
-            font-size: clamp(40px, 6vw, 72px);
-            font-weight: 900;
-            margin-bottom: 60px;
-            text-align: center;
-        }
-
-        .section-subtitle {
-            text-align: center;
-            font-size: clamp(18px, 2vw, 24px);
-            color: rgba(255, 255, 255, 0.6);
-            max-width: 800px;
-            margin: -40px auto 80px;
-        }
-
-        /* About Section */
-        .about {
-            background: linear-gradient(180deg, #0a0a0a, #1a1a2e);
-        }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 80px;
-            align-items: center;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .about-text p {
-            font-size: 20px;
-            line-height: 1.8;
-            color: rgba(255, 255, 255, 0.8);
-            margin-bottom: 25px;
-        }
-
-        .about-text strong {
-            color: #667eea;
-            font-weight: 700;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 30px;
-            margin-top: 50px;
-        }
-
-        .stat-card {
-            text-align: center;
-            padding: 40px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 20px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-10px);
-            background: rgba(102, 126, 234, 0.1);
-            border-color: #667eea;
-        }
-
-        .stat-number {
-            font-size: 56px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            font-size: 16px;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(100%); }
         }
 
         /* Skills Section */
-        .skills {
-            background: #0a0a0a;
-        }
-
         .skills-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 30px;
-            max-width: 1400px;
-            margin: 0 auto;
         }
 
         .skill-card {
             padding: 40px;
             background: rgba(255, 255, 255, 0.02);
-            border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
             transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .skill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+            transition: left 0.6s;
+        }
+
+        .skill-card:hover::before {
+            left: 100%;
         }
 
         .skill-card:hover {
+            background: rgba(0, 255, 255, 0.03);
+            border-color: var(--primary);
             transform: translateY(-10px);
-            background: rgba(102, 126, 234, 0.05);
-            border-color: rgba(102, 126, 234, 0.3);
         }
 
         .skill-card h3 {
             font-size: 24px;
-            margin-bottom: 25px;
-            color: #667eea;
-            font-weight: 700;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--primary);
         }
 
         .skill-card ul {
@@ -233,402 +434,817 @@
             padding: 12px 0;
             color: rgba(255, 255, 255, 0.7);
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-            font-size: 16px;
+            font-size: 15px;
+            font-family: 'JetBrains Mono', monospace;
         }
 
         .skill-card li:last-child {
             border-bottom: none;
         }
 
-        /* Experience Section */
-        .experience {
-            background: linear-gradient(180deg, #0a0a0a, #1a1a2e);
+        /* AI Section */
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
         }
 
-        .timeline {
-            max-width: 1000px;
-            margin: 0 auto;
+        .ai-card {
+            padding: 50px;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.05), rgba(255, 0, 255, 0.05));
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 20px;
+            transition: all 0.4s;
             position: relative;
         }
 
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 3px;
-            background: linear-gradient(180deg, #667eea, #764ba2);
+        .ai-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 30px 60px rgba(0, 255, 255, 0.2);
+            border-color: var(--primary);
         }
 
-        .timeline-item {
-            margin-bottom: 60px;
-            padding-left: 50px;
-            position: relative;
+        .ai-icon {
+            font-size: 48px;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 0 20px var(--primary));
         }
 
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -8px;
-            top: 0;
-            width: 20px;
-            height: 20px;
-            background: #667eea;
-            border-radius: 50%;
-            box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+        .ai-card h3 {
+            font-size: 26px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--light);
         }
 
-        .timeline-date {
-            font-size: 14px;
-            color: #667eea;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .timeline-title {
-            font-size: 28px;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .timeline-company {
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.6);
-            margin-bottom: 15px;
-        }
-
-        .timeline-description {
+        .ai-card p {
             font-size: 16px;
             line-height: 1.7;
             color: rgba(255, 255, 255, 0.7);
         }
 
-        /* Contact Section */
-        .contact {
-            background: #0a0a0a;
-            padding-bottom: 80px;
+        /* Experience Timeline */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 100px;
+            width: 45%;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+            padding-right: 80px;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 55%;
+            text-align: left;
+            padding-left: 80px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            top: 0;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary);
+            z-index: 2;
+        }
+
+        .timeline-item:nth-child(odd) .timeline-dot {
+            right: -10px;
+        }
+
+        .timeline-item:nth-child(even) .timeline-dot {
+            left: -10px;
+        }
+
+        .timeline-content {
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(0, 255, 255, 0.1);
+            border-radius: 15px;
+            transition: all 0.4s;
+        }
+
+        .timeline-content:hover {
+            background: rgba(0, 255, 255, 0.05);
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .timeline-date {
+            font-size: 14px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .timeline-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--light);
+        }
+
+        .timeline-company {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.6);
+            margin-bottom: 20px;
+        }
+
+        .timeline-description {
+            font-size: 15px;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Contact Section */
         .contact-container {
             max-width: 800px;
             margin: 0 auto;
         }
 
-        .contact-info {
+        .contact-form {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 30px;
-            margin-bottom: 60px;
         }
 
-        .contact-item {
-            padding: 30px;
-            background: rgba(102, 126, 234, 0.05);
-            border-radius: 15px;
-            border: 1px solid rgba(102, 126, 234, 0.2);
+        .form-group {
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--light);
+            font-size: 16px;
+            font-family: 'Space Grotesk', sans-serif;
             transition: all 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 200px;
+        }
+
+        .submit-btn {
+            padding: 20px 60px;
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .submit-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: var(--primary);
+            transition: left 0.3s;
+            z-index: -1;
+        }
+
+        .submit-btn:hover::before {
+            left: 0;
+        }
+
+        .submit-btn:hover {
+            color: var(--dark);
+        }
+
+        .contact-info {
+            margin-top: 60px;
             text-align: center;
         }
 
-        .contact-item:hover {
-            transform: translateY(-5px);
-            background: rgba(102, 126, 234, 0.1);
-            border-color: #667eea;
+        .contact-links {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
         }
 
-        .contact-icon {
-            font-size: 32px;
-            margin-bottom: 15px;
-        }
-
-        .contact-label {
-            font-size: 14px;
-            color: rgba(255, 255, 255, 0.5);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .contact-value {
-            font-size: 16px;
-            color: #fff;
-            font-weight: 600;
-        }
-
-        .contact-value a {
-            color: #fff;
+        .contact-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: rgba(255, 255, 255, 0.7);
             text-decoration: none;
+            font-size: 16px;
             transition: color 0.3s;
         }
 
-        .contact-value a:hover {
-            color: #667eea;
+        .contact-link:hover {
+            color: var(--primary);
         }
 
         /* Footer */
         footer {
-            padding: 40px 8%;
+            padding: 60px;
             text-align: center;
-            background: #000;
             border-top: 1px solid rgba(255, 255, 255, 0.05);
             color: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Scroll Indicator */
-        .scroll-indicator {
-            position: absolute;
-            bottom: 40px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.5);
             font-size: 14px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            animation: bounce 2s infinite;
         }
 
-        @keyframes bounce {
-            0%, 100% { transform: translateX(-50%) translateY(0); }
-            50% { transform: translateX(-50%) translateY(10px); }
+        /* Loading Screen */
+        .loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--dark);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 1s;
+        }
+
+        .loader.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader-content {
+            text-align: center;
+        }
+
+        .loader-text {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 4px;
+            color: var(--primary);
+            margin-bottom: 30px;
+        }
+
+        .loader-bar {
+            width: 300px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader-progress {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 0;
+            background: var(--primary);
+            animation: loading 2s ease forwards;
+        }
+
+        @keyframes loading {
+            to { width: 100%; }
         }
 
         /* Responsive */
         @media (max-width: 968px) {
+            nav {
+                padding: 20px 30px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .hero,
+            section {
+                padding: 80px 30px;
+            }
+
             .about-grid {
                 grid-template-columns: 1fr;
                 gap: 40px;
             }
 
-            .stats-grid {
-                grid-template-columns: 1fr;
+            .timeline::before {
+                left: 20px;
             }
 
-            section {
-                padding: 80px 6%;
+            .timeline-item {
+                width: 100%;
+                left: 0 !important;
+                text-align: left !important;
+                padding-left: 80px !important;
+                padding-right: 0 !important;
+            }
+
+            .timeline-dot {
+                left: 10px !important;
+                right: auto !important;
             }
         }
 
-        /* Fade In Animation */
-        .fade-in {
+        /* Reveal Animation */
+        .reveal {
             opacity: 0;
-            transform: translateY(30px);
-            transition: all 0.8s ease-out;
+            transform: translateY(50px);
+            transition: all 1s ease;
         }
 
-        .fade-in.visible {
+        .reveal.active {
             opacity: 1;
             transform: translateY(0);
         }
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
-    <section class="hero">
-        <div class="hero-bg"></div>
-        <div class="hero-content">
+    <!-- Loader -->
+    <div class="loader">
+        <div class="loader-content">
+            <div class="loader-text">LOADING EXPERIENCE</div>
+            <div class="loader-bar">
+                <div class="loader-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Cursor -->
+    <div class="cursor"></div>
+    <div class="cursor-dot"></div>
+
+    <!-- Three.js Canvas -->
+    <div id="canvas-container"></div>
+
+    <!-- Content -->
+    <div class="content">
+        <!-- Navigation -->
+        <nav>
+            <div class="logo">NKR.MADHADI</div>
+            <ul class="nav-menu">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#skills">Skills</a></li>
+                <li><a href="#ai">AI</a></li>
+                <li><a href="#experience">Experience</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-tag">Data Engineer & Architect</div>
             <h1 class="hero-title">NIKHIL KUMAR<br>REDDY MADHADI</h1>
-            <p class="hero-subtitle">Data Engineer & Architect</p>
-            <p class="hero-tagline">Transforming data into intelligence • 10+ years of cloud innovation • GCP & Azure Expert</p>
-            <a href="#about" class="cta-button">Explore My Work</a>
-<a href="3d-world.html" class="cta-button" style="margin-left: 20px; background: linear-gradient(135deg, #ff6b6b, #ee5a6f);">Enter 3D World 🎮</a>
-        </div>
-        <div class="scroll-indicator">Scroll Down ↓</div>
-    </section>
+            <p class="hero-subtitle">Transforming complex data ecosystems into scalable intelligence platforms. 10+ years architecting cloud-native solutions.</p>
+            <button class="hero-cta">
+                <span>Explore My Work</span>
+                <span>→</span>
+            </button>
+            <div class="scroll-indicator">
+                <span>Scroll</span>
+                <div class="scroll-line"></div>
+            </div>
+        </section>
 
-    <!-- About Section -->
-    <section id="about" class="about">
-        <h2 class="section-title fade-in">About Me</h2>
-        <p class="section-subtitle fade-in">Building scalable data solutions that drive business impact</p>
-        <div class="about-grid">
-            <div class="about-text fade-in">
-                <p>A <strong>Google Certified Professional Data Engineer</strong> with over 10 years of expertise in IT data analytics, specializing in cloud-native architectures and big data ecosystems.</p>
-                <p>I architect scalable data solutions across <strong>Google Cloud Platform (GCP)</strong> and <strong>Microsoft Azure</strong>, transforming complex business requirements into high-performance data pipelines that drive actionable insights.</p>
-                <p>My expertise spans the entire data lifecycle—from ingestion and transformation to analytics and visualization—leveraging cutting-edge technologies like <strong>BigQuery, Databricks, Apache Spark, and Dataflow</strong>.</p>
+        <!-- About Section -->
+        <section id="about" class="reveal">
+            <div class="section-header">
+                <div class="section-tag">Who I Am</div>
+                <h2 class="section-title">Crafting Data<br>Solutions That Scale</h2>
+                <p class="section-description">A Google Certified Professional Data Engineer specializing in cloud-native architectures and big data ecosystems.</p>
             </div>
-            <div class="stats-grid fade-in">
-                <div class="stat-card">
-                    <div class="stat-number">10+</div>
-                    <div class="stat-label">Years Experience</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">50+</div>
-                    <div class="stat-label">Projects Delivered</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">2</div>
-                    <div class="stat-label">Certifications</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number">100%</div>
-                    <div class="stat-label">Success Rate</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Skills Section -->
-    <section id="skills" class="skills">
-        <h2 class="section-title fade-in">Technical Arsenal</h2>
-        <div class="skills-grid">
-            <div class="skill-card fade-in">
-                <h3>Cloud Platforms</h3>
-                <ul>
-                    <li>Google Cloud Platform (GCP)</li>
-                    <li>Microsoft Azure</li>
-                    <li>Cloud Storage & Data Lakes</li>
-                    <li>Serverless Architecture</li>
-                </ul>
-            </div>
-            <div class="skill-card fade-in">
-                <h3>Big Data & Analytics</h3>
-                <ul>
-                    <li>BigQuery</li>
-                    <li>Apache Spark & PySpark</li>
-                    <li>Databricks</li>
-                    <li>Apache Beam & Dataflow</li>
-                    <li>Hadoop Ecosystem</li>
-                </ul>
-            </div>
-            <div class="skill-card fade-in">
-                <h3>Data Engineering</h3>
-                <ul>
-                    <li>ETL/ELT Pipelines</li>
-                    <li>Cloud Composer (Airflow)</li>
-                    <li>Azure Data Factory</li>
-                    <li>Data Fusion & DataProc</li>
-                    <li>DBT (Data Build Tool)</li>
-                </ul>
-            </div>
-            <div class="skill-card fade-in">
-                <h3>Programming</h3>
-                <ul>
-                    <li>Python (Pandas, NumPy, SciPy)</li>
-                    <li>SQL (BigQuery, T-SQL, PL/SQL)</li>
-                    <li>Scala</li>
-                    <li>Shell/Bash Scripting</li>
-                    <li>R</li>
-                </ul>
-            </div>
-            <div class="skill-card fade-in">
-                <h3>Databases</h3>
-                <ul>
-                    <li>PostgreSQL & Cloud SQL</li>
-                    <li>MySQL & MS SQL Server</li>
-                    <li>Oracle & PL/SQL</li>
-                    <li>Teradata</li>
-                </ul>
-            </div>
-            <div class="skill-card fade-in">
-                <h3>DevOps & Tools</h3>
-                <ul>
-                    <li>CI/CD (Azure DevOps, BuildKite)</li>
-                    <li>Terraform (IaC)</li>
-                    <li>Git (Bitbucket, GitLab)</li>
-                    <li>Kubernetes</li>
-                    <li>JIRA & Agile</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Experience Section -->
-    <section id="experience" class="experience">
-        <h2 class="section-title fade-in">Professional Journey</h2>
-        <div class="timeline">
-            <div class="timeline-item fade-in">
-                <div class="timeline-date">Sep 2024 – Dec 2025</div>
-                <div class="timeline-title">Sr. GCP Data Engineer</div>
-                <div class="timeline-company">Wendy's – Remote, USA</div>
-                <div class="timeline-description">Led large-scale BigQuery to Cloud SQL PostgreSQL migration. Architected fault-tolerant Dataflow pipelines using Apache Beam. Built Apigee API proxies with advanced security and performance optimization.</div>
-            </div>
-            <div class="timeline-item fade-in">
-                <div class="timeline-date">July 2023 – Sep 2024</div>
-                <div class="timeline-title">Sr. GCP Data Engineer</div>
-                <div class="timeline-company">SeaWorld Parks & Entertainment – Remote, USA</div>
-                <div class="timeline-description">Implemented end-to-end ELT solutions using Cloud Data Fusion and DBT. Developed streaming pipelines with Dataflow and Pub/Sub. Established CI/CD with Azure DevOps and Terraform IaC.</div>
-            </div>
-            <div class="timeline-item fade-in">
-                <div class="timeline-date">December 2022 – July 2023</div>
-                <div class="timeline-title">Sr. GCP Data Engineer</div>
-                <div class="timeline-company">Charter Communications – Remote, USA</div>
-                <div class="timeline-description">Migrated complex PySpark workflows from DataBricks to BigQuery. Built CDC pipelines from Oracle using Apache Beam. Created dashboards for real-time ELT monitoring.</div>
-            </div>
-            <div class="timeline-item fade-in">
-                <div class="timeline-date">June 2017 – December 2022</div>
-                <div class="timeline-title">GCP Data Engineer</div>
-                <div class="timeline-company">Carelon Global Solution / Anthem Inc.</div>
-                <div class="timeline-description">Maintained multi-project GCP infrastructure using Terraform. Developed ELT processes with DataProc, BigQuery, and Cloud Composer. Migrated Oracle SQL ETL to GCP.</div>
-            </div>
-            <div class="timeline-item fade-in">
-                <div class="timeline-date">June 2015 – May 2017</div>
-                <div class="timeline-title">Mainframe Developer</div>
-                <div class="timeline-company">Sunsoft Technologies / Humana – Hyderabad, India</div>
-                <div class="timeline-description">Developed COBOL-DB2 applications. Performed root cause analysis and system maintenance. Created technical design documentation.</div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-        <h2 class="section-title fade-in">Get In Touch</h2>
-        <div class="contact-container">
-            <div class="contact-info">
-                <div class="contact-item fade-in">
-                    <div class="contact-icon">📧</div>
-                    <div class="contact-label">Email</div>
-                    <div class="contact-value">
-                        <a href="mailto:nikhilkumar.reddymadhadi@gmail.com">nikhilkumar.reddymadhadi@gmail.com</a>
+            <div class="about-grid">
+                <div class="about-content">
+                    <p>With over a decade of experience in data engineering, I architect end-to-end solutions that transform raw data into actionable intelligence.</p>
+                    <p>My expertise spans the entire modern data stack—from ingestion and transformation to analytics and visualization—leveraging cutting-edge technologies across Google Cloud Platform and Microsoft Azure.</p>
+                    <p>I specialize in building fault-tolerant, high-performance data pipelines that process millions of events per second, enabling real-time decision-making at enterprise scale.</p>
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <div class="stat-number">10+</div>
+                            <div class="stat-label">Years Experience</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">50+</div>
+                            <div class="stat-label">Projects Delivered</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">2</div>
+                            <div class="stat-label">Certifications</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">100%</div>
+                            <div class="stat-label">Client Satisfaction</div>
+                        </div>
                     </div>
                 </div>
-                <div class="contact-item fade-in">
-                    <div class="contact-icon">📱</div>
-                    <div class="contact-label">Phone</div>
-                    <div class="contact-value">
-                        <a href="tel:7077063269">(707) 706-3269</a>
-                    </div>
+                <div class="about-image"></div>
+            </div>
+        </section>
+
+        <!-- Skills Section -->
+        <section id="skills" class="reveal">
+            <div class="section-header">
+                <div class="section-tag">Expertise</div>
+                <h2 class="section-title">Technical Arsenal</h2>
+            </div>
+            <div class="skills-grid">
+                <div class="skill-card">
+                    <h3>Cloud Platforms</h3>
+                    <ul>
+                        <li>Google Cloud Platform (GCP)</li>
+                        <li>Microsoft Azure</li>
+                        <li>Cloud Storage & Data Lakes</li>
+                        <li>Serverless Architecture</li>
+                    </ul>
                 </div>
-                <div class="contact-item fade-in">
-                    <div class="contact-icon">💼</div>
-                    <div class="contact-label">LinkedIn</div>
-                    <div class="contact-value">
-                        <a href="https://linkedin.com/in/nikhil-kumar-reddy-madhadi" target="_blank">Connect</a>
-                    </div>
+                <div class="skill-card">
+                    <h3>Big Data & Analytics</h3>
+                    <ul>
+                        <li>BigQuery</li>
+                        <li>Apache Spark & PySpark</li>
+                        <li>Databricks</li>
+                        <li>Apache Beam & Dataflow</li>
+                        <li>Hadoop Ecosystem</li>
+                    </ul>
                 </div>
-                <div class="contact-item fade-in">
-                    <div class="contact-icon">📍</div>
-                    <div class="contact-label">Location</div>
-                    <div class="contact-value">Houston, Texas</div>
+                <div class="skill-card">
+                    <h3>Data Engineering</h3>
+                    <ul>
+                        <li>ETL/ELT Pipelines</li>
+                        <li>Cloud Composer (Airflow)</li>
+                        <li>Azure Data Factory</li>
+                        <li>Data Fusion & DataProc</li>
+                        <li>DBT (Data Build Tool)</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <h3>Programming</h3>
+                    <ul>
+                        <li>Python (Pandas, NumPy)</li>
+                        <li>SQL (BigQuery, T-SQL)</li>
+                        <li>Scala</li>
+                        <li>Shell/Bash</li>
+                        <li>R</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <h3>Databases</h3>
+                    <ul>
+                        <li>PostgreSQL & Cloud SQL</li>
+                        <li>MySQL & MS SQL Server</li>
+                        <li>Oracle</li>
+                        <li>Teradata</li>
+                    </ul>
+                </div>
+                <div class="skill-card">
+                    <h3>DevOps</h3>
+                    <ul>
+                        <li>CI/CD (Azure DevOps)</li>
+                        <li>Terraform (IaC)</li>
+                        <li>Git (Bitbucket, GitLab)</li>
+                        <li>Kubernetes</li>
+                    </ul>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- Footer -->
-    <footer>
-        <p>&copy; 2026 Nikhil Kumar Reddy Madhadi. All rights reserved.</p>
-    </footer>
+        <!-- AI Section -->
+        <section id="ai" class="reveal">
+            <div class="section-header">
+                <div class="section-tag">Innovation</div>
+                <h2 class="section-title">AI & Advanced<br>Technologies</h2>
+            </div>
+            <div class="ai-grid">
+                <div class="ai-card">
+                    <div class="ai-icon">🤖</div>
+                    <h3>Machine Learning Pipelines</h3>
+                    <p>Building scalable ML workflows using Cloud Dataflow and BigQuery ML for clustering algorithms and predictive analytics.</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-icon">🎭</div>
+                    <h3>AI-Powered Data Masking</h3>
+                    <p>Implementing intelligent data masking and anonymization techniques ensuring privacy compliance while maintaining data utility.</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-icon">🧠</div>
+                    <h3>Automated Data Quality</h3>
+                    <p>Leveraging AI-driven anomaly detection and automated validation frameworks to ensure data integrity at scale.</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-icon">⚡</div>
+                    <h3>Real-time Stream Processing</h3>
+                    <p>Designing intelligent streaming architectures processing millions of events per second with minimal latency.</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-icon">🔮</div>
+                    <h3>Predictive Analytics</h3>
+                    <p>Creating forecasting models that transform historical data into actionable future insights using BigQuery ML.</p>
+                </div>
+                <div class="ai-card">
+                    <div class="ai-icon">🚀</div>
+                    <h3>DataOps & Automation</h3>
+                    <p>Pioneering DataOps practices with intelligent orchestration and CI/CD pipelines for accelerated delivery.</p>
+                </div>
+            </div>
+        </section>
 
+        <!-- Experience Section -->
+        <section id="experience" class="reveal">
+            <div class="section-header">
+                <div class="section-tag">Career</div>
+                <h2 class="section-title">Professional Journey</h2>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">Sep 2024 – Dec 2025</div>
+                        <div class="timeline-title">Sr. GCP Data Engineer</div>
+                        <div class="timeline-company">Wendy's</div>
+                        <div class="timeline-description">Led large-scale BigQuery to Cloud SQL PostgreSQL migration. Architected fault-tolerant Dataflow pipelines. Built Apigee API proxies with advanced security.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">July 2023 – Sep 2024</div>
+                        <div class="timeline-title">Sr. GCP Data Engineer</div>
+                        <div class="timeline-company">SeaWorld Parks & Entertainment</div>
+                        <div class="timeline-description">Implemented ELT solutions using Cloud Data Fusion and DBT. Developed streaming pipelines with Dataflow and Pub/Sub. Established CI/CD with Terraform.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">Dec 2022 – July 2023</div>
+                        <div class="timeline-title">Sr. GCP Data Engineer</div>
+                        <div class="timeline-company">Charter Communications</div>
+                        <div class="timeline-description">Migrated PySpark workflows from DataBricks to BigQuery. Built CDC pipelines from Oracle using Apache Beam.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">June 2017 – Dec 2022</div>
+                        <div class="timeline-title">GCP Data Engineer</div>
+                        <div class="timeline-company">Carelon Global Solution / Anthem</div>
+                        <div class="timeline-description">Maintained multi-project GCP infrastructure using Terraform. Developed ELT processes with DataProc and BigQuery.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <div class="timeline-date">June 2015 – May 2017</div>
+                        <div class="timeline-title">Mainframe Developer</div>
+                        <div class="timeline-company">Sunsoft Technologies / Humana</div>
+                        <div class="timeline-description">Developed COBOL-DB2 applications. Performed root cause analysis and system maintenance.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section id="contact" class="reveal">
+            <div class="section-header">
+                <div class="section-tag">Get In Touch</div>
+                <h2 class="section-title">Let's Build<br>Something Amazing</h2>
+            </div>
+            <div class="contact-container">
+                <form class="contact-form" onsubmit="handleSubmit(event)">
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <input type="text" id="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="message">Message</label>
+                        <textarea id="message" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">Send Message</button>
+                </form>
+                <div class="contact-info">
+                    <div class="contact-links">
+                        <a href="mailto:nikhilkumar.reddymadhadi@gmail.com" class="contact-link">
+                            <span>📧</span>
+                            <span>nikhilkumar.reddymadhadi@gmail.com</span>
+                        </a>
+                        <a href="tel:7077063269" class="contact-link">
+                            <span>📱</span>
+                            <span>(707) 706-3269</span>
+                        </a>
+                        <a href="https://linkedin.com/in/nikhil-kumar-reddy-madhadi" target="_blank" class="contact-link">
+                            <span>💼</span>
+                            <span>LinkedIn</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <p>&copy; 2026 Nikhil Kumar Reddy Madhadi. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Scroll reveal animation
-        const observerOptions = {
-            threshold: 0.1,
-            rootMargin: '0px 0px -100px 0px'
-        };
+        // Loading Screen
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.querySelector('.loader').classList.add('hidden');
+            }, 2500);
+        });
 
-        const observer = new IntersectionObserver((entries) => {
+        // Custom Cursor
+        const cursor = document.querySelector('.cursor');
+        const cursorDot = document.querySelector('.cursor-dot');
+        let mouseX = 0, mouseY = 0;
+        let cursorX = 0, cursorY = 0;
+        let dotX = 0, dotY = 0;
+
+        document.addEventListener('mousemove', (e) => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        function animateCursor() {
+            cursorX += (mouseX - cursorX) * 0.15;
+            cursorY += (mouseY - cursorY) * 0.15;
+            dotX += (mouseX - dotX) * 0.3;
+            dotY += (mouseY - dotY) * 0.3;
+
+            cursor.style.left = cursorX - 20 + 'px';
+            cursor.style.top = cursorY - 20 + 'px';
+            cursorDot.style.left = dotX - 4 + 'px';
+            cursorDot.style.top = dotY - 4 + 'px';
+
+            requestAnimationFrame(animateCursor);
+        }
+        animateCursor();
+
+        // Cursor hover effect
+        const hoverElements = document.querySelectorAll('a, button, .skill-card, .ai-card, .timeline-content');
+        hoverElements.forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hover'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hover'));
+        });
+
+        // Three.js Scene
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+        // Particles
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 3000;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for (let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.05,
+            color: 0x00ffff,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        // Torus Knot
+        const geometry = new THREE.TorusKnotGeometry(10, 3, 100, 16);
+        const material = new THREE.MeshStandardMaterial({
+            color: 0x00ffff,
+            wireframe: true,
+            transparent: true,
+            opacity: 0.3
+        });
+        const torusKnot = new THREE.Mesh(geometry, material);
+        scene.add(torusKnot);
+
+        // Lights
+        const pointLight = new THREE.PointLight(0x00ffff, 2);
+        pointLight.position.set(20, 20, 20);
+        scene.add(pointLight);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        camera.position.z = 30;
+
+        // Mouse movement effect
+        let targetX = 0, targetY = 0;
+        document.addEventListener('mousemove', (e) => {
+            targetX = (e.clientX / window.innerWidth - 0.5) * 2;
+            targetY = (e.clientY / window.innerHeight - 0.5) * 2;
+        });
+
+        // Scroll effect
+        let scrollY = window.scrollY;
+        window.addEventListener('scroll', () => {
+            scrollY = window.scrollY;
+        });
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Rotate torus
+            torusKnot.rotation.x += 0.001;
+            torusKnot.rotation.y += 0.002;
+
+            // Rotate particles
+            particlesMesh.rotation.y += 0.0005;
+
+            // Mouse parallax
+            camera.position.x += (targetX * 5 - camera.position.x) * 0.05;
+            camera.position.y += (-targetY * 5 - camera.position.y) * 0.05;
+
+            // Scroll parallax
+            camera.position.z = 30 + scrollY * 0.01;
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Resize handler
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Scroll reveal animation
+        const reveals = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
+                    entry.target.classList.add('active');
                 }
             });
-        }, observerOptions);
+        }, { threshold: 0.1 });
 
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
+        reveals.forEach(reveal => revealObserver.observe(reveal));
 
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -640,6 +1256,17 @@
                 }
             });
         });
+
+        // Form submit
+        function handleSubmit(e) {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const subject = encodeURIComponent('Portfolio Contact');
+            const body = encodeURIComponent(`Name: ${formData.get('name')}\nEmail: ${formData.get('email')}\n\nMessage:\n${formData.get('message')}`);
+            window.location.href = `mailto:nikhilkumar.reddymadhadi@gmail.com?subject=${subject}&body=${body}`;
+            e.target.reset();
+            alert('Thank you! Opening your email client...');
+        }
     </script>
 </body>
 </html>
