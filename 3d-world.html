@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nikhil's 3D World | Premium Portfolio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            overflow: hidden;
+            background: #000;
+        }
+
+        #canvas {
+            display: block;
+        }
+
+        /* Loading Screen */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            transition: opacity 1s;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 80px;
+            height: 80px;
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 30px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .loading-progress {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 16px;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 1s, transform 1s;
+        }
+
+        .welcome-screen.hidden {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .welcome-content {
+            text-align: center;
+            animation: fadeInUp 1.2s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-title {
+            font-size: 72px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 20px;
+            letter-spacing: -1px;
+        }
+
+        .welcome-subtitle {
+            font-size: 28px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 50px;
+            font-weight: 300;
+        }
+
+        .enter-btn {
+            padding: 20px 60px;
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .enter-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(102, 126, 234, 0.5);
+        }
+
+        /* HUD */
+        .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 30px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        .hud.visible {
+            opacity: 1;
+        }
+
+        .player-info {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 15px;
+            color: #fff;
+            display: inline-block;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .player-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .player-title {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .controls {
+            position: fixed;
+            bottom: 30px;
+            left: 30px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 20px 30px;
+            border-radius: 15px;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
+
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .control-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .key {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 5px;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        /* Interaction Prompt */
+        .interaction-prompt {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            border-radius: 15px;
+            color: #fff;
+            font-size: 18px;
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .interaction-prompt.visible {
+            opacity: 1;
+        }
+
+        .prompt-building {
+            font-weight: 700;
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: #667eea;
+        }
+
+        .prompt-action {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .prompt-key {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.3);
+            padding: 3px 10px;
+            border-radius: 5px;
+            margin: 0 5px;
+            font-weight: 700;
+        }
+
+        /* Content Modal */
+        .content-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .content-modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-container {
+            max-width: 1200px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideIn 0.5s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            font-size: 64px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .modal-body {
+            font-size: 20px;
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .modal-body p {
+            margin-bottom: 25px;
+        }
+
+        .modal-body strong {
+            color: #667eea;
+        }
+
+        .close-modal-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            padding: 15px 35px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1001;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .close-modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        /* Minimap */
+        .minimap {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            pointer-events: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .welcome-title {
+                font-size: 48px;
+            }
+
+            .welcome-subtitle {
+                font-size: 20px;
+            }
+
+            .modal-header {
+                font-size: 42px;
+            }
+
+            .modal-body {
+                font-size: 16px;
+            }
+
+            .controls {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
+        <div class="loading-text">Loading 3D World</div>
+        <div class="loading-progress" id="loadingProgress">0%</div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-content">
+            <h1 class="welcome-title">Welcome to My World</h1>
+            <p class="welcome-subtitle">Nikhil Kumar Reddy Madhadi<br>Data Engineer & Architect</p>
+            <button class="enter-btn" onclick="enterWorld()">Enter World</button>
+        </div>
+    </div>
+
+    <!-- Canvas -->
+    <canvas id="canvas"></canvas>
+
+    <!-- HUD -->
+    <div class="hud" id="hud">
+        <div class="player-info">
+            <div class="player-name">Nikhil Kumar Reddy Madhadi</div>
+            <div class="player-title">Data Engineer & Architect</div>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <div class="control-item">
+            <div class="key">WASD</div>
+            <span>Move Around</span>
+        </div>
+        <div class="control-item">
+            <div class="key">MOUSE</div>
+            <span>Look Around</span>
+        </div>
+        <div class="control-item">
+            <div class="key">SHIFT</div>
+            <span>Run</span>
+        </div>
+        <div class="control-item">
+            <div class="key">E</div>
+            <span>Interact</span>
+        </div>
+    </div>
+
+    <!-- Interaction Prompt -->
+    <div class="interaction-prompt" id="interactionPrompt">
+        <div class="prompt-building" id="promptBuilding"></div>
+        <div class="prompt-action">Press <span class="prompt-key">E</span> to enter</div>
+    </div>
+
+    <!-- Content Modal -->
+    <div class="content-modal" id="contentModal">
+        <button class="close-modal-btn" onclick="closeModal()">Close (ESC)</button>
+        <div class="modal-container" id="modalContainer"></div>
+    </div>
+
+    <!-- Minimap -->
+    <div class="minimap" id="minimap">
+        <canvas id="minimapCanvas" width="200" height="200"></canvas>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Portfolio content data
+        const contentData = {
+            about: {
+                title: 'ABOUT ME',
+                content: `
+                    <p>A <strong>Google Certified Professional Data Engineer</strong> with over 10 years of expertise in IT data analytics, specializing in cloud-native architectures and big data ecosystems.</p>
+                    <p>I architect scalable data solutions across <strong>Google Cloud Platform (GCP)</strong> and <strong>Microsoft Azure</strong>, transforming complex business requirements into high-performance data pipelines that drive actionable insights.</p>
+                    <p>My expertise spans the entire data lifecycle—from ingestion and transformation to analytics and visualization—leveraging cutting-edge technologies like <strong>BigQuery, Databricks, Apache Spark, and Dataflow</strong>.</p>
+                `
+            },
+            skills: {
+                title: 'TECHNICAL SKILLS',
+                content: `
+                    <p><strong>Cloud Platforms:</strong> Google Cloud Platform (GCP), Microsoft Azure, Cloud Storage & Data Lakes, Serverless Architecture</p>
+                    <p><strong>Big Data & Analytics:</strong> BigQuery, Apache Spark & PySpark, Databricks, Apache Beam & Dataflow, Hadoop Ecosystem</p>
+                    <p><strong>Data Engineering:</strong> ETL/ELT Pipelines, Cloud Composer (Airflow), Azure Data Factory (ADF), Data Fusion & DataProc, DBT (Data Build Tool)</p>
+                    <p><strong>Programming:</strong> Python (Pandas, NumPy, SciPy), SQL (BigQuery, T-SQL, PL/SQL), Scala, Shell/Bash Scripting, R</p>
+                    <p><strong>Databases:</strong> PostgreSQL & Cloud SQL, MySQL & MS SQL Server, Oracle, Teradata, NoSQL Databases</p>
+                    <p><strong>DevOps & Tools:</strong> CI/CD (Azure DevOps, BuildKite), Terraform (IaC), Git (Bitbucket, GitLab), Kubernetes, JIRA & Agile</p>
+                `
+            },
+            ai: {
+                title: 'AI & ADVANCED TECHNOLOGIES',
+                content: `
+                    <p><strong>Machine Learning Pipelines:</strong> Building scalable ML workflows using Cloud Dataflow and BigQuery ML for clustering algorithms and predictive analytics. Expertise in feature engineering and model deployment.</p>
+                    <p><strong>AI-Powered Data Masking:</strong> Implementing intelligent data masking and anonymization techniques using advanced algorithms to ensure privacy compliance while maintaining data utility for analytics.</p>
+                    <p><strong>Automated Data Quality:</strong> Leveraging AI-driven anomaly detection and automated data validation frameworks to ensure data integrity across massive datasets. Smart monitoring and alerting systems.</p>
+                    <p><strong>Real-time Stream Processing:</strong> Designing intelligent streaming architectures with Pub/Sub and Dataflow that process millions of events per second with minimal latency for instant business insights.</p>
+                    <p><strong>Predictive Analytics:</strong> Creating forecasting models and predictive pipelines that transform historical data into actionable future insights using BigQuery ML and custom Python algorithms.</p>
+                `
+            },
+            experience: {
+                title: 'PROFESSIONAL JOURNEY',
+                content: `
+                    <p><strong>Wendy's (Sep 2024 – Dec 2025) - Sr. GCP Data Engineer</strong><br>
+                    Led large-scale BigQuery to Cloud SQL PostgreSQL migration. Architected fault-tolerant Dataflow pipelines using Apache Beam. Built Apigee API proxies with advanced security and performance optimization.</p>
+                    
+                    <p><strong>SeaWorld Parks & Entertainment (July 2023 – Sep 2024) - Sr. GCP Data Engineer</strong><br>
+                    Implemented end-to-end ELT solutions using Cloud Data Fusion and DBT. Developed streaming pipelines with Dataflow and Pub/Sub. Established CI/CD with Azure DevOps and Terraform IaC.</p>
+                    
+                    <p><strong>Charter Communications (Dec 2022 – July 2023) - Sr. GCP Data Engineer</strong><br>
+                    Migrated complex PySpark workflows from DataBricks to BigQuery. Built CDC pipelines from Oracle using Apache Beam. Created dashboards for real-time ELT monitoring.</p>
+                    
+                    <p><strong>Carelon Global Solution / Anthem (June 2017 – Dec 2022) - GCP Data Engineer</strong><br>
+                    Maintained multi-project GCP infrastructure using Terraform. Developed ELT processes with DataProc, BigQuery, and Cloud Composer. Migrated Oracle SQL ETL to GCP.</p>
+                    
+                    <p><strong>Sunsoft Technologies / Humana (June 2015 – May 2017) - Mainframe Developer</strong><br>
+                    Developed COBOL-DB2 applications. Performed root cause analysis and system maintenance. Created technical design documentation.</p>
+                `
+            },
+            contact: {
+                title: 'GET IN TOUCH',
+                content: `
+                    <p><strong>📧 Email:</strong> nikhilkumar.reddymadhadi@gmail.com</p>
+                    <p><strong>📱 Phone:</strong> (707) 706-3269</p>
+                    <p><strong>💼 LinkedIn:</strong> linkedin.com/in/nikhil-kumar-reddy-madhadi</p>
+                    <p><strong>📍 Location:</strong> Houston, Texas, USA</p>
+                    <p><strong>🎓 Education:</strong> B.Tech in Electronics & Communication Engineering</p>
+                    <p><strong>🏆 Certifications:</strong> Google Cloud Certified Professional Data Engineer, SnowPro Core</p>
+                `
+            }
+        };
+
+        // Three.js scene setup
+        let scene, camera, renderer;
+        let player, playerMesh;
+        let buildings = [];
+        let controls = {
+            forward: false,
+            backward: false,
+            left: false,
+            right: false,
+            shift: false
+        };
+        let velocity = new THREE.Vector3();
+        let direction = new THREE.Vector3();
+        let rotation = 0;
+        let currentBuilding = null;
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffa07a);
+            scene.fog = new THREE.Fog(0xffa07a, 50, 300);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 15, 25);
+
+            // Renderer
+            const canvas = document.getElementById('canvas');
+            renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+            // Lights
+            const hemisphereLight = new THREE.HemisphereLight(0xffeeb1, 0x080820, 0.6);
+            scene.add(hemisphereLight);
+
+            const sunLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            sunLight.position.set(100, 100, 50);
+            sunLight.castShadow = true;
+            sunLight.shadow.camera.left = -100;
+            sunLight.shadow.camera.right = 100;
+            sunLight.shadow.camera.top = 100;
+            sunLight.shadow.camera.bottom = -100;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            scene.add(sunLight);
+
+            // Ground
+            const groundGeometry = new THREE.PlaneGeometry(400, 400);
+            const groundMaterial = new THREE.MeshLambertMaterial({ 
+                color: 0xd4a5a5,
+                flatShading: true
+            });
+            const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+
+            // Player
+            const playerGeometry = new THREE.CapsuleGeometry(1, 2, 8, 16);
+            const playerMaterial = new THREE.MeshLambertMaterial({ color: 0x667eea });
+            playerMesh = new THREE.Mesh(playerGeometry, playerMaterial);
+            playerMesh.position.set(0, 2.5, 0);
+            playerMesh.castShadow = true;
+            scene.add(playerMesh);
+
+            player = {
+                mesh: playerMesh,
+                position: playerMesh.position,
+                speed: 0.15,
+                runSpeed: 0.3
+            };
+
+            // Create world
+            createBuildings();
+            createCar();
+            createTrees();
+            createStreetLights();
+
+            // Event listeners
+            window.addEventListener('resize', onWindowResize);
+            document.addEventListener('keydown', onKeyDown);
+            document.addEventListener('keyup', onKeyUp);
+
+            // Hide loading screen
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 2000);
+        }
+
+        function createBuildings() {
+            const buildingData = [
+                { x: -40, z: -40, color: 0x00d4ff, label: 'About Studio', key: 'about' },
+                { x: 40, z: -40, color: 0x9d4edd, label: 'Tech Shop', key: 'skills' },
+                { x: 0, z: -60, color: 0x06ffa5, label: 'AI Labs', key: 'ai' },
+                { x: -40, z: 40, color: 0xff9f1c, label: 'Career Plaza', key: 'experience' },
+                { x: 40, z: 40, color: 0xff006e, label: 'Contact Point', key: 'contact' }
+            ];
+
+            buildingData.forEach(data => {
+                const building = new THREE.Group();
+
+                // Main structure
+                const buildingGeom = new THREE.BoxGeometry(20, 25, 20);
+                const buildingMat = new THREE.MeshLambertMaterial({ 
+                    color: 0x6b6b6b,
+                    flatShading: true
+                });
+                const buildingMesh = new THREE.Mesh(buildingGeom, buildingMat);
+                buildingMesh.position.y = 12.5;
+                buildingMesh.castShadow = true;
+                buildingMesh.receiveShadow = true;
+                building.add(buildingMesh);
+
+                // Sign
+                const signGeom = new THREE.BoxGeometry(18, 4, 0.5);
+                const signMat = new THREE.MeshLambertMaterial({ color: data.color });
+                const sign = new THREE.Mesh(signGeom, signMat);
+                sign.position.set(0, 18, 10.3);
+                building.add(sign);
+
+                // Entrance
+                const doorGeom = new THREE.BoxGeometry(5, 8, 0.3);
+                const doorMat = new THREE.MeshLambertMaterial({ color: 0x2b2b2b });
+                const door = new THREE.Mesh(doorGeom, doorMat);
+                door.position.set(0, 4, 10.2);
+                building.add(door);
+
+                // Windows
+                for (let i = -1; i <= 1; i++) {
+                    for (let j = 1; j <= 2; j++) {
+                        const windowGeom = new THREE.BoxGeometry(2.5, 2.5, 0.2);
+                        const windowMat = new THREE.MeshLambertMaterial({ 
+                            color: 0xffffcc,
+                            emissive: 0xffffcc,
+                            emissiveIntensity: 0.3
+                        });
+                        const windowMesh = new THREE.Mesh(windowGeom, windowMat);
+                        windowMesh.position.set(i * 6, j * 7 + 5, 10.2);
+                        building.add(windowMesh);
+                    }
+                }
+
+                building.position.set(data.x, 0, data.z);
+                building.userData = { label: data.label, key: data.key };
+                scene.add(building);
+                buildings.push(building);
+            });
+        }
+
+        function createCar() {
+            const car = new THREE.Group();
+
+            // Body
+            const bodyGeom = new THREE.BoxGeometry(10, 2.5, 5);
+            const bodyMat = new THREE.MeshLambertMaterial({ color: 0xff0000 });
+            const body = new THREE.Mesh(bodyGeom, bodyMat);
+            body.position.y = 2;
+            body.castShadow = true;
+            car.add(body);
+
+            // Roof
+            const roofGeom = new THREE.BoxGeometry(5, 2, 4.5);
+            const roofMat = new THREE.MeshLambertMaterial({ color: 0xcc0000 });
+            const roof = new THREE.Mesh(roofGeom, roofMat);
+            roof.position.set(-1.5, 4, 0);
+            car.add(roof);
+
+            // Wheels
+            const wheelGeom = new THREE.CylinderGeometry(1, 1, 0.8, 16);
+            const wheelMat = new THREE.MeshLambertMaterial({ color: 0x1a1a1a });
+
+            const positions = [
+                [-3, 1, 2.5],
+                [-3, 1, -2.5],
+                [3, 1, 2.5],
+                [3, 1, -2.5]
+            ];
+
+            positions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeom, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(...pos);
+                wheel.castShadow = true;
+                car.add(wheel);
+            });
+
+            car.position.set(-60, 0, 0);
+            scene.add(car);
+        }
+
+        function createTrees() {
+            const treePositions = [
+                [-70, 0, -50], [70, 0, -50],
+                [-70, 0, 50], [70, 0, 50],
+                [-50, 0, -70], [50, 0, -70]
+            ];
+
+            treePositions.forEach(pos => {
+                const tree = new THREE.Group();
+
+                // Trunk
+                const trunkGeom = new THREE.CylinderGeometry(0.8, 1, 18, 8);
+                const trunkMat = new THREE.MeshLambertMaterial({ color: 0x8b5a3c });
+                const trunk = new THREE.Mesh(trunkGeom, trunkMat);
+                trunk.position.y = 9;
+                trunk.castShadow = true;
+                tree.add(trunk);
+
+                // Leaves
+                const leavesGeom = new THREE.SphereGeometry(5, 8, 8);
+                const leavesMat = new THREE.MeshLambertMaterial({ color: 0x2d5016 });
+                const leaves = new THREE.Mesh(leavesGeom, leavesMat);
+                leaves.position.y = 20;
+                leaves.castShadow = true;
+                tree.add(leaves);
+
+                tree.position.set(...pos);
+                scene.add(tree);
+            });
+        }
+
+        function createStreetLights() {
+            const lightPositions = [
+                [-30, 0, -80], [30, 0, -80],
+                [-30, 0, 80], [30, 0, 80]
+            ];
+
+            lightPositions.forEach(pos => {
+                const light = new THREE.Group();
+
+                // Pole
+                const poleGeom = new THREE.CylinderGeometry(0.3, 0.3, 20, 8);
+                const poleMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+                const pole = new THREE.Mesh(poleGeom, poleMat);
+                pole.position.y = 10;
+                pole.castShadow = true;
+                light.add(pole);
+
+                // Lamp
+                const lampGeom = new THREE.SphereGeometry(1.5, 16, 16);
+                const lampMat = new THREE.MeshLambertMaterial({ 
+                    color: 0xffeb99,
+                    emissive: 0xffeb99,
+                    emissiveIntensity: 0.5
+                });
+                const lamp = new THREE.Mesh(lampGeom, lampMat);
+                lamp.position.y = 20;
+                light.add(lamp);
+
+                light.position.set(...pos);
+                scene.add(light);
+            });
+        }
+
+        function onKeyDown(e) {
+            switch (e.code) {
+                case 'KeyW': controls.forward = true; break;
+                case 'KeyS': controls.backward = true; break;
+                case 'KeyA': controls.left = true; break;
+                case 'KeyD': controls.right = true; break;
+                case 'ShiftLeft': controls.shift = true; break;
+                case 'KeyE':
+                    if (currentBuilding) {
+                        showModal(currentBuilding.userData.key);
+                    }
+                    break;
+                case 'Escape':
+                    closeModal();
+                    break;
+            }
+        }
+
+        function onKeyUp(e) {
+            switch (e.code) {
+                case 'KeyW': controls.forward = false; break;
+                case 'KeyS': controls.backward = false; break;
+                case 'KeyA': controls.left = false; break;
+                case 'KeyD': controls.right = false; break;
+                case 'ShiftLeft': controls.shift = false; break;
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        function updatePlayer() {
+            const speed = controls.shift ? player.runSpeed : player.speed;
+
+            direction.set(0, 0, 0);
+
+            if (controls.forward) direction.z -= 1;
+            if (controls.backward) direction.z += 1;
+            if (controls.left) direction.x -= 1;
+            if (controls.right) direction.x += 1;
+
+            if (direction.length() > 0) {
+                direction.normalize();
+                player.position.x += direction.x * speed;
+                player.position.z += direction.z * speed;
+            }
+
+            // Camera follow
+            camera.position.x = player.position.x;
+            camera.position.y = player.position.y + 12;
+            camera.position.z = player.position.z + 20;
+            camera.lookAt(player.position);
+
+            // Check building proximity
+            checkBuildingProximity();
+        }
+
+        function checkBuildingProximity() {
+            currentBuilding = null;
+            const prompt = document.getElementById('interactionPrompt');
+            const promptBuilding = document.getElementById('promptBuilding');
+
+            buildings.forEach(building => {
+                const distance = player.position.distanceTo(building.position);
+                if (distance < 20) {
+                    currentBuilding = building;
+                    promptBuilding.textContent = building.userData.label;
+                    prompt.classList.add('visible');
+                }
+            });
+
+            if (!currentBuilding) {
+                prompt.classList.remove('visible');
+            }
+        }
+
+        function showModal(key) {
+            const modal = document.getElementById('contentModal');
+            const container = document.getElementById('modalContainer');
+            const data = contentData[key];
+
+            container.innerHTML = `
+                <h1 class="modal-header">${data.title}</h1>
+                <div class="modal-body">${data.content}</div>
+            `;
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('contentModal').classList.remove('active');
+        }
+
+        function enterWorld() {
+            document.getElementById('welcomeScreen').classList.add('hidden');
+            document.getElementById('hud').classList.add('visible');
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePlayer();
+            renderer.render(scene, camera);
+        }
+
+        // Initialize
+        init();
+        animate();
+    </script>
+</body>
+</html>
